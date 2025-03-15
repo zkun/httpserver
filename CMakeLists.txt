@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5 COMPONENTS Network WebSockets)
 
 add_library(httpserver
+    src/qhttpserverliterals.h
     src/qhttpserver.h src/qhttpserver.cpp
-    src/qhttpserverliterals_p.h src/qhttpserverliterals.cpp
     src/qhttpserverrequest.h src/qhttpserverrequest_p.h src/qhttpserverrequest.cpp
     src/qhttpserverresponse.h src/qhttpserverresponse_p.h src/qhttpserverresponse.cpp
     src/qabstracthttpserver.h src/qabstracthttpserver_p.h src/qabstracthttpserver.cpp

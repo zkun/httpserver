@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include "qhttpserverrequest_p.h"
-#include "qhttpserverliterals_p.h"
+#include "qhttpserverliterals.h"
 #include "qhttpserverresponse_p.h"
 #include "qhttpserverresponder_p.h"
 
@@ -190,8 +190,7 @@ void QHttpServerResponder::write(QIODevice *data,
     writeStatusLine(status);
 
     if (!input->isSequential()) { // Non-sequential QIODevice should know its data size
-        writeHeader(QHttpServerLiterals::contentLengthHeader(),
-                    QByteArray::number(input->size()));
+        writeHeader(QHttpServerLiterals::contentLengthHeader, QByteArray::number(input->size()));
     }
 
     for (auto &&header : headers)
@@ -218,7 +217,7 @@ void QHttpServerResponder::write(QIODevice *data,
 */
 void QHttpServerResponder::write(QIODevice *data, const QByteArray &mimeType, StatusCode status)
 {
-    write(data, {{ QHttpServerLiterals::contentTypeHeader(), mimeType }}, status);
+    write(data, {{ QHttpServerLiterals::contentTypeHeader, mimeType }}, status);
 }
 
 /*!
@@ -232,10 +231,8 @@ void QHttpServerResponder::write(const QJsonDocument &document, HeaderList heade
     const QByteArray &json = document.toJson();
 
     writeStatusLine(status);
-    writeHeader(QHttpServerLiterals::contentTypeHeader(),
-                QHttpServerLiterals::contentTypeJson());
-    writeHeader(QHttpServerLiterals::contentLengthHeader(),
-                QByteArray::number(json.size()));
+    writeHeader(QHttpServerLiterals::contentTypeHeader, QHttpServerLiterals::contentTypeJson);
+    writeHeader(QHttpServerLiterals::contentLengthHeader, QByteArray::number(json.size()));
     writeHeaders(std::move(headers));
     writeBody(document.toJson());
 }
@@ -264,8 +261,7 @@ void QHttpServerResponder::write(const QByteArray &data, HeaderList headers, Sta
     for (auto &&header : headers)
         writeHeader(header.first, header.second);
 
-    writeHeader(QHttpServerLiterals::contentLengthHeader(),
-                QByteArray::number(data.size()));
+    writeHeader(QHttpServerLiterals::contentLengthHeader, QByteArray::number(data.size()));
     writeBody(data);
 }
 
@@ -275,7 +271,7 @@ void QHttpServerResponder::write(const QByteArray &data, HeaderList headers, Sta
 */
 void QHttpServerResponder::write(const QByteArray &data, const QByteArray &mimeType, StatusCode status)
 {
-    write(data, {{ QHttpServerLiterals::contentTypeHeader(), mimeType }}, status);
+    write(data, {{ QHttpServerLiterals::contentTypeHeader, mimeType }}, status);
 }
 
 /*!
@@ -285,7 +281,7 @@ void QHttpServerResponder::write(const QByteArray &data, const QByteArray &mimeT
 */
 void QHttpServerResponder::write(StatusCode status)
 {
-    write(QByteArray(), QHttpServerLiterals::contentTypeXEmpty(), status);
+    write(QByteArray(), QHttpServerLiterals::contentTypeXEmpty, status);
 }
 
 /*!
@@ -378,7 +374,7 @@ void QHttpServerResponder::sendResponse(const QHttpServerResponse &response)
     for (auto &&header : d->headers)
         writeHeader(header.first, header.second);
 
-    writeHeader(QHttpServerLiterals::contentLengthHeader(), QByteArray::number(d->data.size()));
+    writeHeader(QHttpServerLiterals::contentLengthHeader, QByteArray::number(d->data.size()));
 
     writeBody(d->data);
 }
