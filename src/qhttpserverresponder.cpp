@@ -302,7 +302,7 @@ void QHttpServerResponder::writeStatusLine(StatusCode status)
     Q_D(QHttpServerResponder);
     Q_ASSERT(d->socket->isOpen());
     d->bodyStarted = false;
-    d->socket->write("HTTP/1.1 ");
+    d->socket->write("HTTP/1.0 ");
     d->socket->write(QByteArray::number(quint32(status)));
     d->socket->write(" ");
     d->socket->write(statusString.at(status));
