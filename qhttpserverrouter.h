@@ -96,7 +96,7 @@ public:
     {
         return addRuleHelper<ViewTraits>(
                 rule,
-                typename QtPrivate::Indexes<ViewTraits::ArgumentCount>::Value{});
+                typename ViewTraits::Arguments::Indexes{});
     }
 
     template<typename ViewHandler, typename ViewTraits = QHttpServerRouterViewTraits<ViewHandler>>
@@ -106,8 +106,8 @@ public:
         return bindCapturedImpl<ViewHandler, ViewTraits>(
                 std::forward<ViewHandler>(handler),
                 match,
-                typename QtPrivate::Indexes<ViewTraits::ArgumentCapturableCount>::Value{},
-                typename QtPrivate::Indexes<ViewTraits::ArgumentPlaceholdersCount>::Value{});
+                typename ViewTraits::Arguments::CapturableIndexes{},
+                typename ViewTraits::Arguments::PlaceholdersIndexes{});
     }
 
     bool handleRequest(const QHttpServerRequest &request,
@@ -118,7 +118,8 @@ private:
     bool addRuleHelper(QHttpServerRouterRule *rule,
                        QtPrivate::IndexesList<Idx...>)
     {
-        const std::initializer_list<int> types = {ViewTraits::template Arg<Idx>::metaTypeId()...};
+        const std::initializer_list<int> types = {
+            ViewTraits::Arguments::template metaTypeId<Idx>()...};
         return addRuleImpl(rule, types);
     }
 
@@ -134,7 +135,8 @@ private:
 
         return std::bind(
                 std::forward<ViewHandler>(handler),
-                QVariant(match.captured(Cx + 1)).value<typename ViewTraits::template Arg<Cx>::Type>()...,
+                QVariant(match.captured(Cx + 1))
+                    .value<typename ViewTraits::Arguments::template Arg<Cx>::CleanType>()...,
                 QtPrivate::QHttpServerRouterPlaceholder<Px>{}...);
     }
 
