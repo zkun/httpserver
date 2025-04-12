@@ -245,10 +245,6 @@ QHttpServerRequest::QHttpServerRequest(const QHostAddress &remoteAddress) :
     d(new QHttpServerRequestPrivate(remoteAddress))
 {}
 
-QHttpServerRequest::QHttpServerRequest(const QHttpServerRequest &other) :
-    d(other.d)
-{}
-
 QHttpServerRequest::~QHttpServerRequest()
 {}
 

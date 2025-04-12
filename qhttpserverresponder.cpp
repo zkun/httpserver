@@ -84,7 +84,7 @@ struct IOChunkedTransfer
         }))
     {
         Q_ASSERT(!source->atEnd());  // TODO error out
-        QObject::connect(sink.data(), &QObject::destroyed, source, &QObject::deleteLater);
+        QObject::connect(sink.data(), &QObject::destroyed, source.data(), &QObject::deleteLater);
         QObject::connect(source.data(), &QObject::destroyed, [this] () {
             delete this;
         });
