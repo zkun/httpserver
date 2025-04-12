@@ -76,16 +76,16 @@ struct IOChunkedTransfer
     IOChunkedTransfer(QIODevice *input, QIODevice *output) :
         source(input),
         sink(output),
-        bytesWrittenConnection(QObject::connect(sink, &QIODevice::bytesWritten, [this] () {
+        bytesWrittenConnection(QObject::connect(sink.data(), &QIODevice::bytesWritten, [this] () {
               writeToOutput();
         })),
-        readyReadConnection(QObject::connect(source, &QIODevice::readyRead, [this] () {
+        readyReadConnection(QObject::connect(source.data(), &QIODevice::readyRead, [this] () {
             readFromInput();
         }))
     {
         Q_ASSERT(!source->atEnd());  // TODO error out
-        QObject::connect(sink, &QObject::destroyed, source, &QObject::deleteLater);
-        QObject::connect(source, &QObject::destroyed, [this] () {
+        QObject::connect(sink.data(), &QObject::destroyed, source, &QObject::deleteLater);
+        QObject::connect(source.data(), &QObject::destroyed, [this] () {
             delete this;
         });
         readFromInput();
@@ -131,7 +131,7 @@ struct IOChunkedTransfer
         beginIndex += writtenBytes;
         if (isBufferEmpty()) {
             if (source->bytesAvailable())
-                QTimer::singleShot(0, source, [this]() { readFromInput(); });
+                QTimer::singleShot(0, source.data(), [this]() { readFromInput(); });
             else if (source->atEnd()) // Finishing
                 source->deleteLater();
         }
