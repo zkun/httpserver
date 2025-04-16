@@ -90,8 +90,7 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
         return;
     }
 
-    if (!request->d->httpParser.upgrade &&
-            request->d->state != QHttpServerRequestPrivate::State::OnMessageComplete)
+    if (!request->d->httpParser.upgrade && request->d->state != QHttpServerRequestPrivate::State::OnMessageComplete)
         return; // Partial read
 
     if (request->d->httpParser.upgrade) { // Upgrade
@@ -101,8 +100,7 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
         if (it != headers.end()) {
 #if defined(QT_WEBSOCKETS_LIB)
             if (it.value().second.compare(QByteArrayLiteral("websocket"), Qt::CaseInsensitive) == 0) {
-                static const auto signal = QMetaMethod::fromSignal(
-                            &QAbstractHttpServer::newWebSocketConnection);
+                static const auto signal = QMetaMethod::fromSignal(&QAbstractHttpServer::newWebSocketConnection);
                 if (q->isSignalConnected(signal)) {
                     QObject::disconnect(socket, &QTcpSocket::readyRead, nullptr, nullptr);
                     socket->rollbackTransaction();

@@ -335,7 +335,7 @@ void QHttpServerResponder::writeStatusLine(StatusCode status,
                                            const QPair<quint8, quint8> &version)
 {
     Q_D(const QHttpServerResponder);
-    Q_ASSERT(d->socket->isOpen());
+    Q_ASSERT(d->socket);
     d->socket->write("HTTP/");
     d->socket->write(QByteArray::number(version.first));
     d->socket->write(".");

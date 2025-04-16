@@ -59,11 +59,8 @@ public:
         : request(request), socket(socket) {}
 
     const QHttpServerRequest &request;
-#if defined(QT_DEBUG)
-    const QPointer<QTcpSocket> socket;
-#else
     QTcpSocket *const socket;
-#endif
+
     bool bodyStarted{false};
 };
 

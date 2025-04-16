@@ -5,10 +5,10 @@ project(httpserver
     DESCRIPTION "Qt HTTP Server")
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt5 COMPONENTS Network WebSockets)
+find_package(Qt5 REQUIRED COMPONENTS WebSockets)
 
 add_library(httpserver
     qabstracthttpserver.cpp qabstracthttpserver.h qabstracthttpserver_p.h
@@ -27,6 +27,6 @@ target_include_directories(httpserver PUBLIC ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(httpserver PRIVATE
     Qt::Network
-    Qt::CorePrivate
     Qt::WebSockets
+    Qt::CorePrivate
 )
