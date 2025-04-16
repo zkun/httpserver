@@ -114,8 +114,8 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
                 return;
             }
 #endif
+            qCWarning(lcHttpServer, "Upgrade to %s not supported", it.value().second.constData());
         }
-        qCWarning(lcHttpServer, "Upgrade to %s not supported", it.value().second.constData());
         socket->disconnectFromHost();
         return;
     }
@@ -144,7 +144,7 @@ QAbstractHttpServer::QAbstractHttpServer(QAbstractHttpServerPrivate &dd, QObject
 
     Returns the server port upon success, -1 otherwise.
 */
-int QAbstractHttpServer::listen(const QHostAddress &address, quint16 port)
+quint16 QAbstractHttpServer::listen(const QHostAddress &address, quint16 port)
 {
     auto tcpServer = new QTcpServer(this);
     const auto listening = tcpServer->listen(address, port);
@@ -157,7 +157,7 @@ int QAbstractHttpServer::listen(const QHostAddress &address, quint16 port)
     }
 
     delete tcpServer;
-    return -1;
+    return 0;
 }
 
 /*!

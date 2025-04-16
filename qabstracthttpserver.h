@@ -50,7 +50,7 @@ class QAbstractHttpServer : public QObject
 public:
     QAbstractHttpServer(QObject *parent = nullptr);
 
-    int listen(const QHostAddress &address = QHostAddress::Any, quint16 port = 0);
+    quint16 listen(const QHostAddress &address = QHostAddress::Any, quint16 port = 0);
 
     void bind(QTcpServer *server = nullptr);
     QVector<QTcpServer *> servers() const;
