@@ -153,8 +153,8 @@ QHttpServerResponder::QHttpServerResponder(const QHttpServerRequest &request,
     Move-constructs a QHttpServerResponder instance, making it point
     at the same object that \a other was pointing to.
 */
-QHttpServerResponder::QHttpServerResponder(QHttpServerResponder &&other) :
-    d_ptr(other.d_ptr.take())
+QHttpServerResponder::QHttpServerResponder(QHttpServerResponder &&other)
+  : d_ptr(std::move(other.d_ptr))
 {}
 
 /*!

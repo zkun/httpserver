@@ -36,6 +36,8 @@
 #include <QtCore/qurlquery.h>
 #include <QtNetwork/qhostaddress.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QRegularExpression;
@@ -97,7 +99,7 @@ Q_DISABLE_COPY(QHttpServerRequest)
 
     explicit QHttpServerRequest(const QHostAddress &remoteAddress);
 
-    QScopedPointer<QHttpServerRequestPrivate> d;
+    std::unique_ptr<QHttpServerRequestPrivate> d;
 };
 
 QT_END_NAMESPACE

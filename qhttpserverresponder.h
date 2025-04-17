@@ -34,10 +34,10 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qscopedpointer.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qmimetype.h>
 
+#include <memory>
 #include <utility>
 #include <initializer_list>
 
@@ -175,7 +175,7 @@ public:
 private:
     QHttpServerResponder(const QHttpServerRequest &request, QTcpSocket *socket);
 
-    QScopedPointer<QHttpServerResponderPrivate> d_ptr;
+    std::unique_ptr<QHttpServerResponderPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

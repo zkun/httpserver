@@ -36,6 +36,7 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qregularexpression.h>
 
+#include <memory>
 #include <functional>
 #include <initializer_list>
 
@@ -66,6 +67,7 @@ class QHttpServerRouterPrivate;
 class QHttpServerRouter
 {
     Q_DECLARE_PRIVATE(QHttpServerRouter)
+    Q_DISABLE_COPY_MOVE(QHttpServerRouter)
 
 public:
     QHttpServerRouter();
@@ -152,7 +154,7 @@ private:
                 QtPrivate::QHttpServerRouterPlaceholder<Px>{}...);
     }
 
-    QScopedPointer<QHttpServerRouterPrivate> d_ptr;
+    std::unique_ptr<QHttpServerRouterPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

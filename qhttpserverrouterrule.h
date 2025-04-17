@@ -32,6 +32,7 @@
 
 #include "qhttpserverrequest.h"
 
+#include <memory>
 #include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -77,7 +78,7 @@ protected:
     QHttpServerRouterRule(QHttpServerRouterRulePrivate *d);
 
 private:
-    QScopedPointer<QHttpServerRouterRulePrivate> d_ptr;
+    std::unique_ptr<QHttpServerRouterRulePrivate> d_ptr;
 
     friend class QHttpServerRouter;
 };
