@@ -89,6 +89,7 @@ QHttpServerRequestPrivate::QHttpServerRequestPrivate(const QHostAddress &remoteA
     : remoteAddress(remoteAddress)
 {
     httpParser.data = this;
+    http_parser_init(&httpParser, HTTP_REQUEST);
 }
 
 QByteArray QHttpServerRequestPrivate::header(const QByteArray &key) const
@@ -288,8 +289,8 @@ QHttpServerRequest::Method QHttpServerRequest::method() const
 QVariantMap QHttpServerRequest::headers() const
 {
     QVariantMap ret;
-    for (auto it = d->headers.cbegin(), end = d->headers.cend(); it != end; ++it)
-        ret.insert(it.value().first, it.value().second);
+    for (auto it : d->headers)
+        ret.insert(QString::fromUtf8(it.first), it.second);
     return ret;
 }
 
