@@ -64,7 +64,7 @@ QHttpServer::QHttpServer(QObject *parent)
     connect(this, &QAbstractHttpServer::missingHandler, this,
             [this] (const QHttpServerRequest &request, QTcpSocket *socket) {
         qCDebug(lcHS) << tr("missing handler:") << request.url().path();
-        sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::NotFound), request, socket);
+        sendResponse(QHttpServerResponder::StatusCode::NotFound, request, socket);
     });
 }
 
@@ -116,13 +116,20 @@ QHttpServerRouter *QHttpServer::router()
     return &d->router;
 }
 
-/*!
-    \internal
-*/
-void QHttpServer::sendResponse(const QHttpServerResponse &response,
+void QHttpServer::afterRequestImpl(AfterRequestHandler &&afterRequestHandler)
+{
+    Q_D(QHttpServer);
+    d->afterRequestHandlers.push_back(std::move(afterRequestHandler));
+}
+
+void QHttpServer::sendResponse(QHttpServerResponse &&response,
                                const QHttpServerRequest &request,
                                QTcpSocket *socket)
 {
+    Q_D(QHttpServer);
+    for (auto afterRequestHandler : d->afterRequestHandlers)
+        response = std::move(afterRequestHandler(std::move(response), request));
+
     response.write(makeResponder(request, socket));
 }
 

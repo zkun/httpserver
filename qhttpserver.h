@@ -33,6 +33,7 @@
 #include "qhttpserverrouter.h"
 #include "qabstracthttpserver.h"
 #include "qhttpserverresponse.h"
+#include "qhttpserverviewtraits.h"
 #include "qhttpserverrouterrule.h"
 #include "qhttpserverrouterviewtraits.h"
 
@@ -75,7 +76,57 @@ public:
                 std::forward<Args>(args)...);
     }
 
+    template<typename ViewHandler>
+    void afterRequest(ViewHandler &&viewHandler)
+    {
+        using ViewTraits = QHttpServerAfterRequestViewTraits<ViewHandler>;
+        static_assert(ViewTraits::Arguments::StaticAssert,
+                      "ViewHandler arguments are in the wrong order or not supported");
+        afterRequestHelper<ViewTraits, ViewHandler>(std::move(viewHandler));
+    }
+
+    using AfterRequestHandler =
+        std::function<QHttpServerResponse(QHttpServerResponse &&response, const QHttpServerRequest &request)>;
+
 private:
+    template<typename ViewTraits, typename ViewHandler>
+    typename std::enable_if<ViewTraits::Arguments::Last::IsRequest::Value &&
+                            ViewTraits::Arguments::Count == 2, void>::type
+            afterRequestHelper(ViewHandler &&viewHandler) {
+        auto handler = [viewHandler](QHttpServerResponse &&resp,
+                                     const QHttpServerRequest &request) {
+            return std::move(viewHandler(std::move(resp), request));
+        };
+
+        afterRequestImpl(std::move(handler));
+    }
+
+    template<typename ViewTraits, typename ViewHandler>
+    typename std::enable_if<ViewTraits::Arguments::Last::IsResponse::Value &&
+                            ViewTraits::Arguments::Count == 1, void>::type
+            afterRequestHelper(ViewHandler &&viewHandler) {
+        auto handler = [viewHandler](QHttpServerResponse &&resp,
+                                     const QHttpServerRequest &) {
+            return std::move(viewHandler(std::move(resp)));
+        };
+
+        afterRequestImpl(std::move(handler));
+    }
+
+    template<typename ViewTraits, typename ViewHandler>
+    typename std::enable_if<ViewTraits::Arguments::Last::IsResponse::Value &&
+                            ViewTraits::Arguments::Count == 2, void>::type
+            afterRequestHelper(ViewHandler &&viewHandler) {
+        auto handler = [viewHandler](QHttpServerResponse &&resp,
+                                     const QHttpServerRequest &request) {
+            return std::move(viewHandler(request, std::move(resp)));
+        };
+
+        afterRequestImpl(std::move(handler));
+    }
+
+    void afterRequestImpl(AfterRequestHandler &&afterRequestHandler);
+
     template<typename Rule, typename ViewHandler, typename ViewTraits, int ... I, typename ... Args>
     bool routeHelper(QtPrivate::IndexesList<I...>, Args &&... args)
     {
@@ -89,7 +140,7 @@ private:
     bool routeImpl(Args &&...args, ViewHandler &&viewHandler)
     {
         auto routerHandler = [this, viewHandler] (
-                    QRegularExpressionMatch &match,
+                    const QRegularExpressionMatch &match,
                     const QHttpServerRequest &request,
                     QTcpSocket *socket) mutable {
             auto boundViewHandler = router()->bindCaptured<ViewHandler, ViewTraits>(
@@ -107,8 +158,8 @@ private:
                          const QHttpServerRequest &request,
                          QTcpSocket *socket)
     {
-        const QHttpServerResponse response(boundViewHandler());
-        sendResponse(response, request, socket);
+        QHttpServerResponse response(boundViewHandler());
+        sendResponse(std::move(response), request, socket);
     }
 
     template<typename ViewTraits, typename T>
@@ -124,8 +175,8 @@ private:
                             ViewTraits::Arguments::PlaceholdersCount == 1, void>::type
             responseImpl(T &boundViewHandler, const QHttpServerRequest &request, QTcpSocket *socket)
     {
-        const QHttpServerResponse response(boundViewHandler(request));
-        sendResponse(response, request, socket);
+        QHttpServerResponse response(boundViewHandler(request));
+        sendResponse(std::move(response), request, socket);
     }
 
     template<typename ViewTraits, typename T>
@@ -150,7 +201,7 @@ private:
 
     bool handleRequest(const QHttpServerRequest &request, QTcpSocket *socket) override final;
 
-    void sendResponse(const QHttpServerResponse &response,
+    void sendResponse(QHttpServerResponse &&response,
                       const QHttpServerRequest &request,
                       QTcpSocket *socket);
 };

@@ -50,8 +50,8 @@ public:
     QHttpServerResponse(const QHttpServerResponse &other) = delete;
     QHttpServerResponse& operator=(const QHttpServerResponse &other) = delete;
 
-    QHttpServerResponse(QHttpServerResponse &&other);
-    QHttpServerResponse& operator=(QHttpServerResponse &&other) = delete;
+    QHttpServerResponse(QHttpServerResponse &&other) noexcept;
+    QHttpServerResponse& operator=(QHttpServerResponse &&other) noexcept;
 
     QHttpServerResponse(const StatusCode statusCode);
 
@@ -95,9 +95,9 @@ public:
     void addHeaders(QHttpServerResponder::HeaderList headers);
 
     template<typename Container>
-    void addHeaders(const Container &headers)
+    void addHeaders(const Container &headerList)
     {
-        for (const auto &header : headers)
+        for (const auto &header : headerList)
             addHeader(header.first, header.second);
     }
 

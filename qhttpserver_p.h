@@ -59,6 +59,7 @@ public:
     QHttpServerPrivate() = default;
 
     QHttpServerRouter router;
+    std::list<QHttpServer::AfterRequestHandler> afterRequestHandlers;
 };
 
 QT_END_NAMESPACE

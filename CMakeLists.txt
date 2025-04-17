@@ -19,7 +19,7 @@ add_library(httpserver
     qhttpserverresponse.cpp qhttpserverresponse.h qhttpserverresponse_p.h
     qhttpserverrouter.cpp qhttpserverrouter.h qhttpserverrouter_p.h
     qhttpserverrouterrule.cpp qhttpserverrouterrule.h qhttpserverrouterrule_p.h
-    qhttpserverrouterviewtraits.h
+    qhttpserverviewtraits.h qhttpserverviewtraits_impl.h qhttpserverrouterviewtraits.h
 )
 
 target_link_libraries(httpserver PRIVATE httpparser)
