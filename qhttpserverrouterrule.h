@@ -33,6 +33,7 @@
 #include "qhttpserverrequest.h"
 
 #include <memory>
+#include <functional>
 #include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,13 +55,12 @@ public:
                                              const QHttpServerRequest &,
                                              QTcpSocket *)>;
 
-    explicit QHttpServerRouterRule(const QString &pathPattern, RouterHandler &&routerHandler);
     explicit QHttpServerRouterRule(const QString &pathPattern,
-                                   const QHttpServerRequest::Methods methods,
-                                   RouterHandler &&routerHandler);
-    explicit QHttpServerRouterRule(const QString &pathPattern,
-                                   const char * methods,
-                                   RouterHandler &&routerHandler);
+                                   RouterHandler routerHandler);
+    explicit QHttpServerRouterRule(const QString &pathPattern, const QHttpServerRequest::Methods methods,
+                                   RouterHandler routerHandler);
+    explicit QHttpServerRouterRule(const QString &pathPattern, const char * methods,
+                                   RouterHandler routerHandler);
 
     virtual ~QHttpServerRouterRule();
 

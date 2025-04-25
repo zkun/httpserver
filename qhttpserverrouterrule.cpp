@@ -117,11 +117,10 @@ static QHttpServerRequest::Methods strToMethods(const char *strMethods)
 
     \sq QHttpServerRequest::Method
 */
-QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern,
-                                             RouterHandler &&routerHandler)
+QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern, RouterHandler routerHandler)
     : QHttpServerRouterRule(pathPattern,
                             QHttpServerRequest::Method::All,
-                            std::forward<RouterHandler>(routerHandler))
+                            std::move(routerHandler))
 {
 }
 
@@ -133,13 +132,11 @@ QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern,
 
     \sa QHttpServerRequest::Method
 */
-QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern,
-                                             const QHttpServerRequest::Methods methods,
-                                             RouterHandler &&routerHandler)
+QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern, const QHttpServerRequest::Methods methods,
+                                             RouterHandler routerHandler)
     : QHttpServerRouterRule(
-        new QHttpServerRouterRulePrivate{pathPattern,
-                                         methods,
-                                         std::forward<RouterHandler>(routerHandler), {}})
+        new QHttpServerRouterRulePrivate{pathPattern, methods,
+                                         std::move(routerHandler), {}})
 {
 }
 
@@ -152,18 +149,13 @@ QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern,
 
     \sa QMetaEnum::keysToValue
 */
-QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern,
-                                             const char *methods,
-                                             RouterHandler &&routerHandler)
-    : QHttpServerRouterRule(pathPattern,
-                            strToMethods(methods),
-                            std::forward<RouterHandler>(routerHandler))
+QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern, const char *methods,
+                                             RouterHandler routerHandler)
+    : QHttpServerRouterRule(pathPattern, strToMethods(methods),
+                            std::move(routerHandler))
 {
 }
 
-/*!
-    \internal
- */
 QHttpServerRouterRule::QHttpServerRouterRule(QHttpServerRouterRulePrivate *d)
     : d_ptr(d)
 {
