@@ -46,9 +46,8 @@ class QAbstractHttpServerPrivate;
 class QAbstractHttpServer : public QObject
 {
     Q_OBJECT
-
 public:
-    QAbstractHttpServer(QObject *parent = nullptr);
+    explicit QAbstractHttpServer(QObject *parent = nullptr);
     ~QAbstractHttpServer() override;
 
     quint16 listen(const QHostAddress &address = QHostAddress::Any, quint16 port = 0);

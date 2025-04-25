@@ -30,12 +30,10 @@
 #ifndef QHTTPSERVERRESPONDER_H
 #define QHTTPSERVERRESPONDER_H
 
-#include <QtCore/qdebug.h>
 #include <QtCore/qpair.h>
-#include <QtCore/qglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmetatype.h>
-#include <QtCore/qmimetype.h>
+#include <QIODevice>
 
 #include <memory>
 #include <utility>

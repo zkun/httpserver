@@ -44,7 +44,7 @@ class QString;
 class QTcpSocket;
 
 class QHttpServerRequestPrivate;
-class QHttpServerRequest
+class QHttpServerRequest final
 {
     friend class QAbstractHttpServerPrivate;
     friend class QHttpServerResponse;
@@ -52,7 +52,7 @@ class QHttpServerRequest
     Q_GADGET
 
 public:
-    virtual ~QHttpServerRequest();
+    ~QHttpServerRequest();
 
     enum class Method
     {
