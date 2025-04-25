@@ -47,6 +47,7 @@ class QHttpServerRequest;
 class QHttpServerResponderPrivate;
 class QHttpServerResponder final
 {
+    Q_GADGET
     Q_DECLARE_PRIVATE(QHttpServerResponder)
 
     friend class QAbstractHttpServer;
@@ -125,6 +126,7 @@ public:
         NetworkAuthenticationRequired,
         NetworkConnectTimeoutError = 599,
     };
+    Q_ENUM(StatusCode)
 
     using HeaderList = std::initializer_list<std::pair<QByteArray, QByteArray>>;
 
