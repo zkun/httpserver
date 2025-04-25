@@ -30,7 +30,6 @@
 #ifndef QHTTPSERVERREQUEST_H
 #define QHTTPSERVERREQUEST_H
 
-#include <QtCore/qdebug.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qurlquery.h>

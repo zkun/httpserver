@@ -128,6 +128,8 @@ QAbstractHttpServer::QAbstractHttpServer(QObject *parent)
     : QAbstractHttpServer(*new QAbstractHttpServerPrivate, parent)
 {}
 
+QAbstractHttpServer::~QAbstractHttpServer() = default;
+
 QAbstractHttpServer::QAbstractHttpServer(QAbstractHttpServerPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {

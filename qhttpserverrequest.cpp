@@ -42,13 +42,12 @@ QT_BEGIN_NAMESPACE
 #if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, const QHttpServerRequest &request)
 {
-    const auto oldSetting = debug.autoInsertSpaces();
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QHttpServerRequest(";
     debug << "(Url: " << request.url() << ")";
     debug << "(Headers: " << request.headers() << ")";
     debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return debug;
 }
 
 QDebug operator<<(QDebug debug, const http_parser *const httpParser)
