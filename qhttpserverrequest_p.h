@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QHttpServerRequestPrivate : public QSharedData
+class QHttpServerRequestPrivate
 {
 public:
     QHttpServerRequestPrivate(const QHostAddress &remoteAddress);
