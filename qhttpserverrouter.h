@@ -91,8 +91,6 @@ public:
     void clearConverters();
     const QMap<int, QLatin1String> &converters() const;
 
-    static const QMap<int, QLatin1String> &defaultConverters();
-
     template<typename ViewHandler, typename ViewTraits = QHttpServerRouterViewTraits<ViewHandler>>
     bool addRule(QHttpServerRouterRule *rule)
     {

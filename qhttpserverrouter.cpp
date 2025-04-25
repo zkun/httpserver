@@ -244,16 +244,6 @@ void QHttpServerRouter::clearConverters()
 }
 
 /*!
-    Returns a map of converter type and regexp.
-*/
-const QMap<int, QLatin1String> &QHttpServerRouter::converters() const
-{
-    Q_D(const QHttpServerRouter);
-    return d->converters;
-}
-
-/*!
-    Returns a map of default converter type and regexp.
     The following converters are available by default:
 
     \value QMetaType::Int
@@ -271,9 +261,10 @@ const QMap<int, QLatin1String> &QHttpServerRouter::converters() const
     \value QMetaType::QUrl
     \value QMetaType::Void       An empty converter.
 */
-const QMap<int, QLatin1String> &QHttpServerRouter::defaultConverters()
+const QMap<int, QLatin1String> &QHttpServerRouter::converters() const
 {
-    return ::defaultConverters;
+    Q_D(const QHttpServerRouter);
+    return d->converters;
 }
 
 bool QHttpServerRouter::addRuleImpl(QHttpServerRouterRule *rule, std::initializer_list<int> types)
@@ -300,7 +291,7 @@ bool QHttpServerRouter::handleRequest(const QHttpServerRequest &request,
                                       QTcpSocket *socket) const
 {
     Q_D(const QHttpServerRouter);
-    for (const auto &rule : qAsConst(d->rules)) {
+    for (const auto &rule : d->rules) {
         if (rule->exec(request, socket))
             return true;
     }
