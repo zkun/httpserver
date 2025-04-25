@@ -92,11 +92,9 @@ public:
     const QMap<int, QLatin1String> &converters() const;
 
     template<typename ViewHandler, typename ViewTraits = QHttpServerRouterViewTraits<ViewHandler>>
-    bool addRule(QHttpServerRouterRule *rule)
+    bool addRule(std::unique_ptr<QHttpServerRouterRule> rule)
     {
-        return addRuleHelper<ViewTraits>(
-                rule,
-                typename ViewTraits::Arguments::Indexes{});
+        return addRuleHelper<ViewTraits>(std::move(rule), typename ViewTraits::Arguments::Indexes{});
     }
 
     template<typename ViewHandler, typename ViewTraits = QHttpServerRouterViewTraits<ViewHandler>>
@@ -115,13 +113,12 @@ public:
 
 private:
     template<typename ViewTraits, int ... Idx>
-    bool addRuleHelper(QHttpServerRouterRule *rule,
-                       QtPrivate::IndexesList<Idx...>)
+    bool addRuleHelper(std::unique_ptr<QHttpServerRouterRule> rule, QtPrivate::IndexesList<Idx...>)
     {
-        return addRuleImpl(rule, {ViewTraits::Arguments::template metaTypeId<Idx>()...});
+        return addRuleImpl(std::move(rule), {ViewTraits::Arguments::template metaTypeId<Idx>()...});
     }
 
-    bool addRuleImpl(QHttpServerRouterRule *rule, std::initializer_list<int> metaTypes);
+    bool addRuleImpl(std::unique_ptr<QHttpServerRouterRule> rule, std::initializer_list<int> metaTypes);
 
     template<typename ViewHandler, typename ViewTraits, int ... Cx, int ... Px>
     typename std::enable_if<ViewTraits::Arguments::CapturableCount != 0, typename ViewTraits::BindableType>::type

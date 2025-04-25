@@ -267,16 +267,14 @@ const QMap<int, QLatin1String> &QHttpServerRouter::converters() const
     return d->converters;
 }
 
-bool QHttpServerRouter::addRuleImpl(QHttpServerRouterRule *rule, std::initializer_list<int> types)
+bool QHttpServerRouter::addRuleImpl(std::unique_ptr<QHttpServerRouterRule> rule, std::initializer_list<int> types)
 {
     Q_D(QHttpServerRouter);
 
-    if (!rule->hasValidMethods() || !rule->createPathRegexp(types, d->converters)) {
-        delete rule;
+    if (!rule->hasValidMethods() || !rule->createPathRegexp(types, d->converters))
         return false;
-    }
 
-    d->rules.emplace_back(rule);
+    d->rules.push_back(std::move(rule));
     return true;
 }
 
