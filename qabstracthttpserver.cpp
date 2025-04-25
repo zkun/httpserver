@@ -87,7 +87,7 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
         request->d->clear();
 
     if (!request->d->parse(socket)) {
-        socket->disconnect();
+        socket->disconnectFromHost();
         return;
     }
 
@@ -98,16 +98,17 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
         const auto &upgradeValue = request->value(QByteArrayLiteral("upgrade"));
 #if defined(QT_WEBSOCKETS_LIB)
         if (upgradeValue.compare(QByteArrayLiteral("websocket"), Qt::CaseInsensitive) == 0) {
-            static const auto signal = QMetaMethod::fromSignal(
-                        &QAbstractHttpServer::newWebSocketConnection);
-            if (q->isSignalConnected(signal)) {
-                QObject::disconnect(socket, &QTcpSocket::readyRead, nullptr, nullptr);
+            static const auto signal = QMetaMethod::fromSignal(&QAbstractHttpServer::newWebSocketConnection);
+            if (q->handleRequest(*request, socket) && q->isSignalConnected(signal)) {
+                delete request;
+                socket->disconnect();
                 socket->rollbackTransaction();
                 websocketServer.handleConnection(socket);
                 Q_EMIT socket->readyRead();
             } else {
                 qWarning(lcHttpServer, "WebSocket received but no slots connected to "
-                                       "QWebSocketServer::newConnection");
+                                       "QWebSocketServer::newConnection or request not handled");
+                Q_EMIT q->missingHandler(*request, socket);
                 socket->disconnectFromHost();
             }
             return;
