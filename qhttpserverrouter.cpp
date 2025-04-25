@@ -276,8 +276,7 @@ const QMap<int, QLatin1String> &QHttpServerRouter::defaultConverters()
     return ::defaultConverters;
 }
 
-bool QHttpServerRouter::addRuleImpl(QHttpServerRouterRule *rule,
-                                    const std::initializer_list<int> &types)
+bool QHttpServerRouter::addRuleImpl(QHttpServerRouterRule *rule, std::initializer_list<int> types)
 {
     Q_D(QHttpServerRouter);
 

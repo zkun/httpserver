@@ -34,6 +34,7 @@
 
 #include <memory>
 #include <functional>
+#include <initializer_list>
 #include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +70,7 @@ protected:
 
     bool hasValidMethods() const;
 
-    bool createPathRegexp(const std::initializer_list<int> &metaTypes,
+    bool createPathRegexp(std::initializer_list<int> metaTypes,
                           const QMap<int, QLatin1String> &converters);
 
     virtual bool matches(const QHttpServerRequest &request,
