@@ -77,8 +77,7 @@ public:
     {
         using ViewHandler = typename VariadicTypeLast<Args...>::Type;
         using ViewTraits = QHttpServerRouterViewTraits<ViewHandler>;
-        static_assert(ViewTraits::Arguments::StaticAssert,
-                      "ViewHandler arguments are in the wrong order or not supported");
+        static_assert(ViewTraits::Arguments::StaticAssert, "ViewHandler arguments are in the wrong order or not supported");
         return routeHelper<Rule, ViewHandler, ViewTraits>(
                 QtPrivate::makeIndexSequence<sizeof ... (Args) - 1>{},
                 std::forward<Args>(args)...);
@@ -88,13 +87,11 @@ public:
     void afterRequest(ViewHandler &&viewHandler)
     {
         using ViewTraits = QHttpServerAfterRequestViewTraits<ViewHandler>;
-        static_assert(ViewTraits::Arguments::StaticAssert,
-                      "ViewHandler arguments are in the wrong order or not supported");
+        static_assert(ViewTraits::Arguments::StaticAssert, "ViewHandler arguments are in the wrong order or not supported");
         afterRequestHelper<ViewTraits, ViewHandler>(std::move(viewHandler));
     }
 
-    using AfterRequestHandler =
-        std::function<QHttpServerResponse(QHttpServerResponse &&response, const QHttpServerRequest &request)>;
+    using AfterRequestHandler = std::function<QHttpServerResponse(QHttpServerResponse &&response, const QHttpServerRequest &request)>;
 
 private:
     template<typename ViewTraits, typename ViewHandler>
@@ -209,9 +206,7 @@ private:
 
     bool handleRequest(const QHttpServerRequest &request, QTcpSocket *socket) override final;
 
-    void sendResponse(QHttpServerResponse &&response,
-                      const QHttpServerRequest &request,
-                      QTcpSocket *socket);
+    void sendResponse(QHttpServerResponse &&response, const QHttpServerRequest &request, QTcpSocket *socket);
 };
 
 QT_END_NAMESPACE
