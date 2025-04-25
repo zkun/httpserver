@@ -51,12 +51,11 @@ struct RemoveCVRef
 };
 
 
-template<bool classMember, typename ReturnT, typename ... Args>
+template<typename ReturnT, typename ... Args>
 struct FunctionTraitsHelper
 {
     static constexpr const int ArgumentCount = sizeof ... (Args);
     static constexpr const int ArgumentIndexMax = ArgumentCount - 1;
-    static constexpr const bool IsClassMember = classMember;
     using ReturnType = ReturnT;
 
     template <int I>
@@ -69,23 +68,25 @@ struct FunctionTraitsHelper
     };
 };
 
+template <typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
 template<typename T>
 struct FunctionTraits;
 
 template<typename T>
-struct FunctionTraits : public FunctionTraits<decltype(&T::operator())>{};
+struct FunctionTraits : public FunctionTraits<decltype(&remove_cvref_t<T>::operator())>{};
 
 template<typename ReturnT, typename ... Args>
 struct FunctionTraits<ReturnT (*)(Args...)>
-    : public FunctionTraitsHelper<false, ReturnT, Args...>
+    : public FunctionTraitsHelper<ReturnT, Args...>
 {
 };
 
 template<class ReturnT, class ClassT, class ...Args>
 struct FunctionTraits<ReturnT (ClassT::*)(Args...) const>
-    : public FunctionTraitsHelper<true, ReturnT, Args...>
+    : public FunctionTraitsHelper<ReturnT, Args...>
 {
-    using classType = ClassT;
 };
 
 template<typename ... T>

@@ -32,6 +32,9 @@
 
 #include <QtCore/qobject.h>
 
+#if defined(QT_WEBSOCKETS_LIB)
+#include <QWebSocket>
+#endif
 #include <QtNetwork/qhostaddress.h>
 
 QT_BEGIN_NAMESPACE
@@ -40,7 +43,6 @@ class QHttpServerRequest;
 class QHttpServerResponder;
 class QTcpServer;
 class QTcpSocket;
-class QWebSocket;
 
 class QAbstractHttpServerPrivate;
 class QAbstractHttpServer : public QObject
@@ -63,7 +65,7 @@ Q_SIGNALS:
 
 public:
     bool hasPendingWebSocketConnections() const;
-    QWebSocket *nextPendingWebSocketConnection();
+    std::unique_ptr<QWebSocket> nextPendingWebSocketConnection();
 #endif // defined(QT_WEBSOCKETS_LIB)
 
 protected:

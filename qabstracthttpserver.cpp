@@ -94,9 +94,9 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
     if (!request->d->httpParser.upgrade && request->d->state != QHttpServerRequestPrivate::State::OnMessageComplete)
         return; // Partial read
 
+#if defined(QT_WEBSOCKETS_LIB)
     if (request->d->httpParser.upgrade && request->d->httpParser.method != HTTP_CONNECT) { // Upgrade
         const auto &upgradeValue = request->value(QByteArrayLiteral("upgrade"));
-#if defined(QT_WEBSOCKETS_LIB)
         if (upgradeValue.compare(QByteArrayLiteral("websocket"), Qt::CaseInsensitive) == 0) {
             static const auto signal = QMetaMethod::fromSignal(&QAbstractHttpServer::newWebSocketConnection);
             if (q->handleRequest(*request, socket) && q->isSignalConnected(signal)) {
@@ -113,8 +113,8 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
             }
             return;
         }
-#endif
     }
+#endif
 
     socket->commitTransaction();
     request->d->handling = true;
@@ -244,10 +244,10 @@ bool QAbstractHttpServer::hasPendingWebSocketConnections() const
 
     \sa newWebSocketConnection(), hasPendingWebSocketConnections()
 */
-QWebSocket *QAbstractHttpServer::nextPendingWebSocketConnection()
+std::unique_ptr<QWebSocket> QAbstractHttpServer::nextPendingWebSocketConnection()
 {
     Q_D(QAbstractHttpServer);
-    return d->websocketServer.nextPendingConnection();
+    return std::unique_ptr<QWebSocket>(d->websocketServer.nextPendingConnection());
 }
 #endif
 
