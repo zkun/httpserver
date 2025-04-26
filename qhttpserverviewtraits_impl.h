@@ -68,26 +68,26 @@ struct FunctionTraitsHelper
     };
 };
 
-template <typename T>
-using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+template<typename T>
+struct FunctionTraitsImpl;
 
 template<typename T>
-struct FunctionTraits;
-
-template<typename T>
-struct FunctionTraits : public FunctionTraits<decltype(&remove_cvref_t<T>::operator())>{};
+struct FunctionTraitsImpl : public FunctionTraitsImpl<decltype(&T::operator())>
+{};
 
 template<typename ReturnT, typename ... Args>
-struct FunctionTraits<ReturnT (*)(Args...)>
-    : public FunctionTraitsHelper<ReturnT, Args...>
+struct FunctionTraitsImpl<ReturnT (*)(Args...)> : public FunctionTraitsHelper<ReturnT, Args...>
 {
 };
 
 template<class ReturnT, class ClassT, class ...Args>
-struct FunctionTraits<ReturnT (ClassT::*)(Args...) const>
+struct FunctionTraitsImpl<ReturnT (ClassT::*)(Args...) const>
     : public FunctionTraitsHelper<ReturnT, Args...>
 {
 };
+
+template<typename T>
+using FunctionTraits = FunctionTraitsImpl<std::decay_t<T>>;
 
 template<typename ... T>
 struct CheckAny {
