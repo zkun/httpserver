@@ -60,8 +60,6 @@ public:
                                    RouterHandler routerHandler);
     explicit QHttpServerRouterRule(const QString &pathPattern, const QHttpServerRequest::Methods methods,
                                    RouterHandler routerHandler);
-    explicit QHttpServerRouterRule(const QString &pathPattern, const char * methods,
-                                   RouterHandler routerHandler);
 
     virtual ~QHttpServerRouterRule();
 
