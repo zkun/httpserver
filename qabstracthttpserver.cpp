@@ -108,7 +108,7 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
             } else {
                 qWarning(lcHttpServer, "WebSocket received but no slots connected to "
                                        "QWebSocketServer::newConnection or request not handled");
-                Q_EMIT q->missingHandler(*request, socket);
+                q->missingHandler(*request, socket);
                 socket->disconnectFromHost();
             }
             return;
@@ -119,7 +119,7 @@ void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
     socket->commitTransaction();
     request->d->handling = true;
     if (!q->handleRequest(*request, socket))
-        Q_EMIT q->missingHandler(*request, socket);
+        q->missingHandler(*request, socket);
     request->d->handling = false;
     if (socket->state() == QAbstractSocket::UnconnectedState)
         socket->deleteLater();

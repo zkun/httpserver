@@ -38,6 +38,7 @@
 #include "qhttpserverrouterviewtraits.h"
 
 #include <tuple>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -95,7 +96,9 @@ public:
     }
 
     using AfterRequestHandler = std::function<QHttpServerResponse(QHttpServerResponse &&response, const QHttpServerRequest &request)>;
+    using MissingHandler = std::function<void(const QHttpServerRequest &request, QHttpServerResponder &&responder)>;
 
+    void setMissingHandler(MissingHandler handler);
 private:
     template<typename ViewTraits, typename ViewHandler>
     void afterRequestHelper(ViewHandler &&viewHandler) {
@@ -173,6 +176,7 @@ private:
     }
 
     bool handleRequest(const QHttpServerRequest &request, QTcpSocket *socket) override final;
+    void missingHandler(const QHttpServerRequest &request, QTcpSocket *socket) override final;
 
     void sendResponse(QHttpServerResponse &&response, const QHttpServerRequest &request, QTcpSocket *socket);
 };

@@ -42,6 +42,19 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcHS, "qt.httpserver");
 
+void QHttpServerPrivate::callMissingHandler(const QHttpServerRequest &request, QTcpSocket *socket)
+{
+    Q_Q(QHttpServer);
+
+    if (missingHandler) {
+        auto responder = QHttpServer::makeResponder(request, socket);
+        missingHandler(request, std::move(responder));
+    } else {
+        qCDebug(lcHS) << "missing handler:" << request.url().path();
+        q->sendResponse(QHttpServerResponder::StatusCode::NotFound, request, socket);
+    }
+}
+
 /*!
     \class QHttpServer
     \brief QHttpServer is a simplified API for QAbstractHttpServer and QHttpServerRouter.
@@ -61,11 +74,6 @@ Q_LOGGING_CATEGORY(lcHS, "qt.httpserver");
 QHttpServer::QHttpServer(QObject *parent)
     : QAbstractHttpServer(*new QHttpServerPrivate, parent)
 {
-    connect(this, &QAbstractHttpServer::missingHandler, this,
-            [this] (const QHttpServerRequest &request, QTcpSocket *socket) {
-        qCDebug(lcHS) << tr("missing handler:") << request.url().path();
-        sendResponse(QHttpServerResponder::StatusCode::NotFound, request, socket);
-    });
 }
 
 /*! \fn template<typename Rule = QHttpServerRouterRule, typename ... Args> bool route(Args && ... args)
@@ -116,6 +124,12 @@ QHttpServerRouter *QHttpServer::router()
     return &d->router;
 }
 
+void QHttpServer::setMissingHandler(MissingHandler handler)
+{
+    Q_D(QHttpServer);
+    d->missingHandler = handler;
+}
+
 void QHttpServer::afterRequestImpl(AfterRequestHandler afterRequestHandler)
 {
     Q_D(QHttpServer);
@@ -141,5 +155,8 @@ bool QHttpServer::handleRequest(const QHttpServerRequest &request, QTcpSocket *s
     Q_D(QHttpServer);
     return d->router.handleRequest(request, socket);
 }
-
+void QHttpServer::missingHandler(const QHttpServerRequest &request, QTcpSocket *socket) {
+    Q_D(QHttpServer);
+    return d->callMissingHandler(request, socket);
+}
 QT_END_NAMESPACE

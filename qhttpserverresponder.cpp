@@ -330,16 +330,11 @@ void QHttpServerResponder::write(HeaderList headers, StatusCode status)
     This function writes HTTP status line with an HTTP status code \a status
     and an HTTP version \a version.
 */
-void QHttpServerResponder::writeStatusLine(StatusCode status,
-                                           const QPair<quint8, quint8> &version)
+void QHttpServerResponder::writeStatusLine(StatusCode status)
 {
     Q_D(const QHttpServerResponder);
-    Q_ASSERT(d->socket);
-    d->socket->write("HTTP/");
-    d->socket->write(QByteArray::number(version.first));
-    d->socket->write(".");
-    d->socket->write(QByteArray::number(version.second));
-    d->socket->write(" ");
+    Q_ASSERT(d->socket->isOpen());
+    d->socket->write("HTTP/1.1 ");
     d->socket->write(QByteArray::number(quint32(status)));
     d->socket->write(" ");
     d->socket->write(statusString.at(status));

@@ -30,7 +30,6 @@
 #ifndef QHTTPSERVERRESPONDER_H
 #define QHTTPSERVERRESPONDER_H
 
-#include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmetatype.h>
 #include <QIODevice>
@@ -160,8 +159,7 @@ public:
     void write(StatusCode status = StatusCode::Ok);
 
 
-    void writeStatusLine(StatusCode status = StatusCode::Ok,
-                         const QPair<quint8, quint8> &version = qMakePair(1u, 1u));
+    void writeStatusLine(StatusCode status = StatusCode::Ok);
 
     void writeHeader(const QByteArray &key, const QByteArray &value);
     void writeHeaders(HeaderList headers);

@@ -57,9 +57,7 @@ public:
     void bind(QTcpServer *server = nullptr);
     QVector<QTcpServer *> servers() const;
 
-Q_SIGNALS:
-    void missingHandler(const QHttpServerRequest &request, QTcpSocket *socket);
-
+signals:
 #if defined(QT_WEBSOCKETS_LIB)
     void newWebSocketConnection();
 
@@ -72,8 +70,9 @@ protected:
     QAbstractHttpServer(QAbstractHttpServerPrivate &dd, QObject *parent = nullptr);
 
     virtual bool handleRequest(const QHttpServerRequest &request, QTcpSocket *socket) = 0;
-    static QHttpServerResponder makeResponder(const QHttpServerRequest &request,
-                                              QTcpSocket *socket);
+    virtual void missingHandler(const QHttpServerRequest &request, QTcpSocket *socket) = 0;
+
+    static QHttpServerResponder makeResponder(const QHttpServerRequest &request, QTcpSocket *socket);
 
 private:
     Q_DECLARE_PRIVATE(QAbstractHttpServer)
