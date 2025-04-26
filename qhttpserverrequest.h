@@ -48,6 +48,7 @@ class QHttpServerRequest final
 {
     friend class QAbstractHttpServerPrivate;
     friend class QHttpServerResponse;
+    friend class QHttpServerStream;
 
     Q_GADGET
 

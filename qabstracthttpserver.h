@@ -48,6 +48,8 @@ class QAbstractHttpServerPrivate;
 class QAbstractHttpServer : public QObject
 {
     Q_OBJECT
+    friend class QHttpServerStream;
+
 public:
     explicit QAbstractHttpServer(QObject *parent = nullptr);
     ~QAbstractHttpServer() override;
@@ -69,10 +71,8 @@ public:
 protected:
     QAbstractHttpServer(QAbstractHttpServerPrivate &dd, QObject *parent = nullptr);
 
-    virtual bool handleRequest(const QHttpServerRequest &request, QTcpSocket *socket) = 0;
-    virtual void missingHandler(const QHttpServerRequest &request, QTcpSocket *socket) = 0;
-
-    static QHttpServerResponder makeResponder(const QHttpServerRequest &request, QTcpSocket *socket);
+    virtual bool handleRequest(const QHttpServerRequest &request, QHttpServerResponder &responder) = 0;
+    virtual void missingHandler(const QHttpServerRequest &request, QHttpServerResponder &&responder) = 0;
 
 private:
     Q_DECLARE_PRIVATE(QAbstractHttpServer)

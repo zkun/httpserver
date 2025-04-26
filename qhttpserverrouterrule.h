@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 
 class QString;
 class QHttpServerRequest;
-class QTcpSocket;
+class QHttpServerResponder;
 class QRegularExpressionMatch;
 class QHttpServerRouter;
 
@@ -53,8 +53,7 @@ class QHttpServerRouterRule
 
 public:
     using RouterHandler = std::function<void(const QRegularExpressionMatch &,
-                                             const QHttpServerRequest &,
-                                             QTcpSocket *)>;
+                                             const QHttpServerRequest &, QHttpServerResponder &&)>;
 
     explicit QHttpServerRouterRule(const QString &pathPattern,
                                    RouterHandler routerHandler);
@@ -64,7 +63,7 @@ public:
     virtual ~QHttpServerRouterRule();
 
 protected:
-    bool exec(const QHttpServerRequest &request, QTcpSocket *socket) const;
+    bool exec(const QHttpServerRequest &request, QHttpServerResponder &responder) const;
 
     bool hasValidMethods() const;
 

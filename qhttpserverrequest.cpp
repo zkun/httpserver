@@ -102,10 +102,9 @@ bool QHttpServerRequestPrivate::parse(QIODevice *socket)
     if (fragment.size()) {
         url.setScheme(QStringLiteral("http"));
 
-        const auto parsed = http_parser_execute(&httpParser,
-                                                &httpParserSettings,
-                                                fragment.constData(),
-                                                size_t(fragment.size()));
+        const auto parsed = http_parser_execute(&httpParser, &httpParserSettings,
+                                                fragment.constData(), size_t(fragment.size()));
+
         if (int(parsed) < fragment.size()) {
             qCDebug(lc, "Parse error: %d", httpParser.http_errno);
             return false;
@@ -122,9 +121,9 @@ uint QHttpServerRequestPrivate::headerHash(const QByteArray &key) const
 void QHttpServerRequestPrivate::clear()
 {
     url.clear();
-    lastHeader.clear();
-    headers.clear();
     body.clear();
+    headers.clear();
+    lastHeader.clear();
 }
 
 bool QHttpServerRequestPrivate::parseUrl(const char *at, size_t length, bool connect, QUrl *url)

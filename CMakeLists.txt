@@ -13,6 +13,7 @@ find_package(Qt5 REQUIRED COMPONENTS WebSockets Concurrent)
 add_library(httpserver
     qabstracthttpserver.cpp qabstracthttpserver.h qabstracthttpserver_p.h
     qhttpserver.cpp qhttpserver.h qhttpserver_p.h
+    qhttpserverstream.cpp qhttpserverstream_p.h
     qhttpserverliterals.cpp qhttpserverliterals_p.h
     qhttpserverfutureresponse.cpp qhttpserverfutureresponse.h
     qhttpserverrequest.cpp qhttpserverrequest.h qhttpserverrequest_p.h

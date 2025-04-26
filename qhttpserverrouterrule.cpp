@@ -148,8 +148,7 @@ bool QHttpServerRouterRule::hasValidMethods() const
 /*!
     This function is called by QHttpServerRouter when a new request is received.
 */
-bool QHttpServerRouterRule::exec(const QHttpServerRequest &request,
-                                 QTcpSocket *socket) const
+bool QHttpServerRouterRule::exec(const QHttpServerRequest &request, QHttpServerResponder &responder) const
 {
     Q_D(const QHttpServerRouterRule);
 
@@ -157,7 +156,7 @@ bool QHttpServerRouterRule::exec(const QHttpServerRequest &request,
     if (!matches(request, &match))
         return false;
 
-    d->routerHandler(match, request, socket);
+    d->routerHandler(match, request, std::move(responder));
     return true;
 }
 

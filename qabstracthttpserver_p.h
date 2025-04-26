@@ -67,8 +67,6 @@ public:
 #endif // defined(QT_WEBSOCKETS_LIB)
 
     void handleNewConnections();
-    void handleReadyRead(QTcpSocket *socket,
-                         QHttpServerRequest *request);
 };
 
 QT_END_NAMESPACE

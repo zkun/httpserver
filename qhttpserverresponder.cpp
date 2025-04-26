@@ -32,6 +32,7 @@
 #include "qhttpserverresponder_p.h"
 #include "qhttpserverliterals_p.h"
 #include "qhttpserverrequest_p.h"
+#include "qhttpserverstream_p.h"
 
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qloggingcategory.h>
@@ -139,14 +140,16 @@ struct IOChunkedTransfer
 };
 
 /*!
-    Constructs a QHttpServerResponder using the request \a request
+    Constructs a QHttpServerResponder using the stream \a stream
     and the socket \a socket.
 */
-QHttpServerResponder::QHttpServerResponder(const QHttpServerRequest &request,
-                                           QTcpSocket *socket) :
-    d_ptr(new QHttpServerResponderPrivate(request, socket))
+QHttpServerResponder::QHttpServerResponder(QHttpServerStream *stream) :
+    d_ptr(new QHttpServerResponderPrivate(stream))
 {
-    Q_ASSERT(socket);
+    Q_ASSERT(stream);
+    Q_ASSERT(!stream->handlingRequest);
+
+    stream->handlingRequest = true;
 }
 
 /*!
@@ -157,11 +160,14 @@ QHttpServerResponder::QHttpServerResponder(QHttpServerResponder &&other)
   : d_ptr(std::move(other.d_ptr))
 {}
 
-/*!
-    Destroys a QHttpServerResponder.
-*/
 QHttpServerResponder::~QHttpServerResponder()
-{}
+{
+    Q_D(QHttpServerResponder);
+    if (d) {
+        Q_ASSERT(d->stream);
+        d->stream->responderDestroyed();
+    }
+}
 
 /*!
     Answers a request with an HTTP status code \a status and
@@ -173,12 +179,10 @@ QHttpServerResponder::~QHttpServerResponder()
 
     \note This function takes the ownership of \a data.
 */
-void QHttpServerResponder::write(QIODevice *data,
-                                 HeaderList headers,
-                                 StatusCode status)
+void QHttpServerResponder::write(QIODevice *data, HeaderList headers, StatusCode status)
 {
     Q_D(QHttpServerResponder);
-    Q_ASSERT(d->socket);
+    Q_ASSERT(d->stream);
     QScopedPointer<QIODevice, QScopedPointerDeleteLater> input(data);
 
     input->setParent(nullptr);
@@ -196,11 +200,6 @@ void QHttpServerResponder::write(QIODevice *data,
         return;
     }
 
-    if (!d->socket->isOpen()) {
-        qCWarning(lc, "Cannot write to socket. It's disconnected");
-        return;
-    }
-
     writeStatusLine(status);
 
     if (!input->isSequential()) { // Non-sequential QIODevice should know its data size
@@ -211,7 +210,7 @@ void QHttpServerResponder::write(QIODevice *data,
     for (auto &&header : headers)
         writeHeader(header.first, header.second);
 
-    d->socket->write("\r\n");
+    d->stream->write("\r\n");
 
     if (input->atEnd()) {
         qCDebug(lc, "No more data available.");
@@ -219,7 +218,7 @@ void QHttpServerResponder::write(QIODevice *data,
     }
 
     // input takes ownership of the IOChunkedTransfer pointer inside his constructor
-    new IOChunkedTransfer<>(input.take(), d->socket);
+    new IOChunkedTransfer<>(input.take(), d->stream->socket);
 }
 
 /*!
@@ -232,9 +231,7 @@ void QHttpServerResponder::write(QIODevice *data,
 
     \note This function takes the ownership of \a data.
 */
-void QHttpServerResponder::write(QIODevice *data,
-                                 const QByteArray &mimeType,
-                                 StatusCode status)
+void QHttpServerResponder::write(QIODevice *data, const QByteArray &mimeType, StatusCode status)
 {
     write(data,
           {{ QHttpServerLiterals::contentTypeHeader(), mimeType }},
@@ -247,9 +244,7 @@ void QHttpServerResponder::write(QIODevice *data,
 
     Note: This function sets HTTP Content-Type header as "application/json".
 */
-void QHttpServerResponder::write(const QJsonDocument &document,
-                                 HeaderList headers,
-                                 StatusCode status)
+void QHttpServerResponder::write(const QJsonDocument &document, HeaderList headers, StatusCode status)
 {
     const QByteArray &json = document.toJson();
 
@@ -268,8 +263,7 @@ void QHttpServerResponder::write(const QJsonDocument &document,
 
     Note: This function sets HTTP Content-Type header as "application/json".
 */
-void QHttpServerResponder::write(const QJsonDocument &document,
-                                 StatusCode status)
+void QHttpServerResponder::write(const QJsonDocument &document, StatusCode status)
 {
     write(document, {}, status);
 }
@@ -280,9 +274,7 @@ void QHttpServerResponder::write(const QJsonDocument &document,
 
     Note: This function sets HTTP Content-Length header.
 */
-void QHttpServerResponder::write(const QByteArray &data,
-                                 HeaderList headers,
-                                 StatusCode status)
+void QHttpServerResponder::write(const QByteArray &data, HeaderList headers, StatusCode status)
 {
     writeStatusLine(status);
 
@@ -298,9 +290,7 @@ void QHttpServerResponder::write(const QByteArray &data,
     Answers a request with an HTTP status code \a status, a
     MIME type \a mimeType and a body \a data.
 */
-void QHttpServerResponder::write(const QByteArray &data,
-                                 const QByteArray &mimeType,
-                                 StatusCode status)
+void QHttpServerResponder::write(const QByteArray &data, const QByteArray &mimeType, StatusCode status)
 {
     write(data,
           {{ QHttpServerLiterals::contentTypeHeader(), mimeType }},
@@ -333,52 +323,42 @@ void QHttpServerResponder::write(HeaderList headers, StatusCode status)
 void QHttpServerResponder::writeStatusLine(StatusCode status)
 {
     Q_D(const QHttpServerResponder);
-    Q_ASSERT(d->socket->isOpen());
-    d->socket->write("HTTP/1.1 ");
-    d->socket->write(QByteArray::number(quint32(status)));
-    d->socket->write(" ");
-    d->socket->write(statusString.at(status));
-    d->socket->write("\r\n");
+    Q_ASSERT(d->stream);
+    d->stream->write("HTTP/1.1 ");
+    d->stream->write(QByteArray::number(quint32(status)));
+    d->stream->write(" ");
+    d->stream->write(statusString.at(status));
+    d->stream->write("\r\n");
 }
 
-/*!
-    This function writes an HTTP header \a header
-    with \a value.
-*/
-void QHttpServerResponder::writeHeader(const QByteArray &header,
-                                       const QByteArray &value)
+void QHttpServerResponder::writeHeader(const QByteArray &header, const QByteArray &value)
 {
     Q_D(const QHttpServerResponder);
-    Q_ASSERT(d->socket->isOpen());
-    d->socket->write(header);
-    d->socket->write(": ");
-    d->socket->write(value);
-    d->socket->write("\r\n");
+    Q_ASSERT(d->stream);
+
+    d->stream->write(header);
+    d->stream->write(": ");
+    d->stream->write(value);
+    d->stream->write("\r\n");
 }
 
-/*!
-    This function writes HTTP headers \a headers.
-*/
 void QHttpServerResponder::writeHeaders(HeaderList headers)
 {
     for (auto &&header : headers)
         writeHeader(header.first, header.second);
 }
 
-/*!
-    This function writes HTTP body \a body with size \a size.
-*/
 void QHttpServerResponder::writeBody(const char *body, qint64 size)
 {
     Q_D(QHttpServerResponder);
-    Q_ASSERT(d->socket->isOpen());
+    Q_ASSERT(d->stream);
 
     if (!d->bodyStarted) {
-        d->socket->write("\r\n");
+        d->stream->write("\r\n");
         d->bodyStarted = true;
     }
 
-    d->socket->write(body, size);
+    d->stream->write(body, size);
 }
 
 /*!
@@ -397,13 +377,10 @@ void QHttpServerResponder::writeBody(const QByteArray &body)
     writeBody(body.constData(), body.size());
 }
 
-/*!
-    Returns the socket used.
-*/
-QTcpSocket *QHttpServerResponder::socket() const
+QHttpServerStream *QHttpServerResponder::stream() const
 {
     Q_D(const QHttpServerResponder);
-    return d->socket;
+    return d->stream;
 }
 
 QT_END_NAMESPACE

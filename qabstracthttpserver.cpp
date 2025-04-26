@@ -33,6 +33,7 @@
 
 #include "qabstracthttpserver_p.h"
 #include "qhttpserverrequest_p.h"
+#include "qhttpserverstream_p.h"
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmetaobject.h>
@@ -56,75 +57,9 @@ void QAbstractHttpServerPrivate::handleNewConnections()
     Q_Q(QAbstractHttpServer);
     auto tcpServer = qobject_cast<QTcpServer *>(q->sender());
     Q_ASSERT(tcpServer);
-    while (auto socket = tcpServer->nextPendingConnection()) {
-        auto request = new QHttpServerRequest(socket->peerAddress());  // TODO own tcp server could pre-allocate it
 
-        QObject::connect(socket, &QTcpSocket::readyRead, q_ptr, [this, request, socket] () {
-            handleReadyRead(socket, request);
-        });
-
-        QObject::connect(socket, &QTcpSocket::disconnected, socket, [request, socket] () {
-            if (!request->d->handling)
-                socket->deleteLater();
-        });
-        QObject::connect(socket, &QObject::destroyed, socket, [request] () {
-            delete request;
-        });
-    }
-}
-
-void QAbstractHttpServerPrivate::handleReadyRead(QTcpSocket *socket,
-                                                 QHttpServerRequest *request)
-{
-    Q_Q(QAbstractHttpServer);
-    Q_ASSERT(socket);
-    Q_ASSERT(request);
-
-    if (!socket->isTransactionStarted())
-        socket->startTransaction();
-
-    if (request->d->state == QHttpServerRequestPrivate::State::OnMessageComplete)
-        request->d->clear();
-
-    if (!request->d->parse(socket)) {
-        socket->disconnectFromHost();
-        return;
-    }
-
-    if (!request->d->httpParser.upgrade && request->d->state != QHttpServerRequestPrivate::State::OnMessageComplete)
-        return; // Partial read
-
-#if defined(QT_WEBSOCKETS_LIB)
-    if (request->d->httpParser.upgrade && request->d->httpParser.method != HTTP_CONNECT) { // Upgrade
-        const auto &upgradeValue = request->value(QByteArrayLiteral("upgrade"));
-        if (upgradeValue.compare(QByteArrayLiteral("websocket"), Qt::CaseInsensitive) == 0) {
-            static const auto signal = QMetaMethod::fromSignal(&QAbstractHttpServer::newWebSocketConnection);
-            if (q->handleRequest(*request, socket) && q->isSignalConnected(signal)) {
-                delete request;
-                socket->disconnect();
-                socket->rollbackTransaction();
-                websocketServer.handleConnection(socket);
-                Q_EMIT socket->readyRead();
-            } else {
-                qWarning(lcHttpServer, "WebSocket received but no slots connected to "
-                                       "QWebSocketServer::newConnection or request not handled");
-                q->missingHandler(*request, socket);
-                socket->disconnectFromHost();
-            }
-            return;
-        }
-    }
-#endif
-
-    socket->commitTransaction();
-    request->d->handling = true;
-    if (!q->handleRequest(*request, socket))
-        q->missingHandler(*request, socket);
-    request->d->handling = false;
-    if (socket->state() == QAbstractSocket::UnconnectedState)
-        socket->deleteLater();
-    else if (socket->bytesAvailable() > 0)
-        QMetaObject::invokeMethod(socket, &QAbstractSocket::readyRead, Qt::QueuedConnection);
+    while (auto socket = tcpServer->nextPendingConnection())
+        new QHttpServerStream(q, socket);
 }
 
 QAbstractHttpServer::QAbstractHttpServer(QObject *parent)
@@ -164,27 +99,6 @@ quint16 QAbstractHttpServer::listen(const QHostAddress &address, quint16 port)
     return 0;
 }
 
-/*!
-    Bind the HTTP server to given TCP \a server over which
-    the transmission happens. It is possible to call this function
-    multiple times with different instances of TCP \a server to
-    handle multiple connections and ports, for example both SSL and
-    non-encrypted connections.
-
-    After calling this function, every _new_ connection will be
-    handled and forwarded by the HTTP server.
-
-    It is the user's responsibility to call QTcpServer::listen() on
-    the \a server.
-
-    If the \a server is null, then a new, default-constructed TCP
-    server will be constructed, which will be listening on a random
-    port and all interfaces.
-
-    The \a server will be parented to this HTTP server.
-
-    \sa QTcpServer, QTcpServer::listen()
-*/
 void QAbstractHttpServer::bind(QTcpServer *server)
 {
     Q_D(QAbstractHttpServer);
@@ -204,59 +118,23 @@ void QAbstractHttpServer::bind(QTcpServer *server)
                             Qt::UniqueConnection);
 }
 
-/*!
-    Returns list of child TCP servers of this HTTP server.
- */
 QVector<QTcpServer *> QAbstractHttpServer::servers() const
 {
     return findChildren<QTcpServer *>().toVector();
 }
 
 #if defined(QT_WEBSOCKETS_LIB)
-/*!
-    \fn QAbstractHttpServer::newConnection
-    This signal is emitted every time a new WebSocket connection is
-    available.
-
-    \sa hasPendingWebSocketConnections(), nextPendingWebSocketConnection()
-*/
-
-/*!
-    Returns \c true if the server has pending WebSocket connections;
-    otherwise returns \c false.
-
-    \sa newWebSocketConnection(), nextPendingWebSocketConnection()
-*/
 bool QAbstractHttpServer::hasPendingWebSocketConnections() const
 {
     Q_D(const QAbstractHttpServer);
     return d->websocketServer.hasPendingConnections();
 }
 
-/*!
-    Returns the next pending connection as a connected QWebSocket
-    object. QAbstractHttpServer does not take ownership of the
-    returned QWebSocket object. It is up to the caller to delete the
-    object explicitly when it will no longer be used, otherwise a
-    memory leak will occur. \c nullptr is returned if this function
-    is called when there are no pending connections.
-
-    \note The returned QWebSocket object cannot be used from another
-    thread.
-
-    \sa newWebSocketConnection(), hasPendingWebSocketConnections()
-*/
 std::unique_ptr<QWebSocket> QAbstractHttpServer::nextPendingWebSocketConnection()
 {
     Q_D(QAbstractHttpServer);
     return std::unique_ptr<QWebSocket>(d->websocketServer.nextPendingConnection());
 }
 #endif
-
-QHttpServerResponder QAbstractHttpServer::makeResponder(const QHttpServerRequest &request,
-                                                        QTcpSocket *socket)
-{
-    return QHttpServerResponder(request, socket);
-}
 
 QT_END_NAMESPACE

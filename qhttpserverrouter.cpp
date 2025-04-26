@@ -285,12 +285,11 @@ bool QHttpServerRouter::addRuleImpl(std::unique_ptr<QHttpServerRouterRule> rule,
     then executes this rule, returning \c true. Returns \c false if no rule
     matches the request.
 */
-bool QHttpServerRouter::handleRequest(const QHttpServerRequest &request,
-                                      QTcpSocket *socket) const
+bool QHttpServerRouter::handleRequest(const QHttpServerRequest &request, QHttpServerResponder &responder) const
 {
     Q_D(const QHttpServerRouter);
     for (const auto &rule : d->rules) {
-        if (rule->exec(request, socket))
+        if (rule->exec(request, responder))
             return true;
     }
 

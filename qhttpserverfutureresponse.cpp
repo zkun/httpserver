@@ -27,6 +27,7 @@
 **
 ****************************************************************************/
 
+#include "qhttpserverresponder.h"
 #include "qhttpserverfutureresponse.h"
 
 #include <QtCore/qfuture.h>
@@ -34,9 +35,8 @@
 
 #include <QtNetwork/qtcpsocket.h>
 
-#include "qhttpserverresponder.h"
+#include "qhttpserverstream_p.h"
 #include "qhttpserverresponse_p.h"
-
 
 QT_BEGIN_NAMESPACE
 
@@ -140,14 +140,12 @@ void QHttpServerFutureResponse::write(QHttpServerResponder &&responder) const
 
     Q_D(const QHttpServerFutureResponse);
 
-    auto socket = responder.socket();
+    auto stream = responder.stream();
     auto futureWatcher = new QResponseWatcher(std::move(responder));
 
-    QObject::connect(socket, &QObject::destroyed,
+    QObject::connect(stream, &QObject::destroyed,
                      futureWatcher, &QObject::deleteLater);
-    QObject::connect(futureWatcher, &QFutureWatcherBase::finished,
-                     socket,
-                    [futureWatcher] () mutable {
+    QObject::connect(futureWatcher, &QFutureWatcherBase::finished, stream, [futureWatcher] () mutable {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         auto resp = futureWatcher->future().d.takeResult();
 #else

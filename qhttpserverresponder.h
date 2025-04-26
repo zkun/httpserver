@@ -41,6 +41,7 @@
 QT_BEGIN_NAMESPACE
 
 class QTcpSocket;
+class QHttpServerStream;
 class QHttpServerRequest;
 
 class QHttpServerResponderPrivate;
@@ -49,7 +50,7 @@ class QHttpServerResponder final
     Q_GADGET
     Q_DECLARE_PRIVATE(QHttpServerResponder)
 
-    friend class QAbstractHttpServer;
+    friend class QHttpServerStream;
 
 public:
     enum class StatusCode {
@@ -132,32 +133,17 @@ public:
     QHttpServerResponder(QHttpServerResponder &&other);
     ~QHttpServerResponder();
 
-    void write(QIODevice *data,
-               HeaderList headers,
-               StatusCode status = StatusCode::Ok);
+    void write(QIODevice *data, HeaderList headers, StatusCode status = StatusCode::Ok);
+    void write(QIODevice *data, const QByteArray &mimeType, StatusCode status = StatusCode::Ok);
 
-    void write(QIODevice *data,
-               const QByteArray &mimeType,
-               StatusCode status = StatusCode::Ok);
+    void write(const QJsonDocument &document, StatusCode status = StatusCode::Ok);
+    void write(const QJsonDocument &document, HeaderList headers, StatusCode status = StatusCode::Ok);
 
-    void write(const QJsonDocument &document,
-               HeaderList headers,
-               StatusCode status = StatusCode::Ok);
+    void write(const QByteArray &data, HeaderList headers, StatusCode status = StatusCode::Ok);
+    void write(const QByteArray &data, const QByteArray &mimeType, StatusCode status = StatusCode::Ok);
 
-    void write(const QJsonDocument &document,
-               StatusCode status = StatusCode::Ok);
-
-    void write(const QByteArray &data,
-               HeaderList headers,
-               StatusCode status = StatusCode::Ok);
-
-    void write(const QByteArray &data,
-               const QByteArray &mimeType,
-               StatusCode status = StatusCode::Ok);
-
-    void write(HeaderList headers, StatusCode status = StatusCode::Ok);
     void write(StatusCode status = StatusCode::Ok);
-
+    void write(HeaderList headers, StatusCode status = StatusCode::Ok);
 
     void writeStatusLine(StatusCode status = StatusCode::Ok);
 
@@ -168,10 +154,10 @@ public:
     void writeBody(const char *body);
     void writeBody(const QByteArray &body);
 
-    QTcpSocket *socket() const;
+    QHttpServerStream *stream() const;
 
 private:
-    QHttpServerResponder(const QHttpServerRequest &request, QTcpSocket *socket);
+    QHttpServerResponder(QHttpServerStream *stream);
 
     std::unique_ptr<QHttpServerResponderPrivate> d_ptr;
 };
