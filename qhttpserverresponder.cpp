@@ -58,7 +58,7 @@ static const std::map<QHttpServerResponder::StatusCode, QByteArray> statusString
 #undef XX
 };
 
-template <qint64 BUFFERSIZE = 512>
+template <qint64 BUFFERSIZE = 128 * 1024>
 struct IOChunkedTransfer
 {
     // TODO This is not the fastest implementation, as it does read & write
@@ -77,16 +77,16 @@ struct IOChunkedTransfer
     IOChunkedTransfer(QIODevice *input, QIODevice *output) :
         source(input),
         sink(output),
-        bytesWrittenConnection(QObject::connect(sink.data(), &QIODevice::bytesWritten, [this] () {
+        bytesWrittenConnection(QObject::connect(sink.data(), &QIODevice::bytesWritten, sink.data(), [this] () {
               writeToOutput();
         })),
-        readyReadConnection(QObject::connect(source.data(), &QIODevice::readyRead, [this] () {
+        readyReadConnection(QObject::connect(source.data(), &QIODevice::readyRead, source.data(), [this] () {
             readFromInput();
         }))
     {
         Q_ASSERT(!source->atEnd());  // TODO error out
         QObject::connect(sink.data(), &QObject::destroyed, source.data(), &QObject::deleteLater);
-        QObject::connect(source.data(), &QObject::destroyed, [this] () {
+        QObject::connect(source.data(), &QObject::destroyed, source.data(), [this] () {
             delete this;
         });
         readFromInput();
@@ -106,8 +106,9 @@ struct IOChunkedTransfer
 
     void readFromInput()
     {
-        if (!isBufferEmpty()) // We haven't consumed all the data yet.
+        if (source.isNull() || !isBufferEmpty()) // We haven't consumed all the data yet.
             return;
+
         beginIndex = 0;
         endIndex = source->read(buffer, bufferSize);
         if (endIndex < 0) {
@@ -121,7 +122,7 @@ struct IOChunkedTransfer
 
     void writeToOutput()
     {
-        if (isBufferEmpty())
+        if (sink.isNull() || source.isNull() || isBufferEmpty())
             return;
 
         const auto writtenBytes = sink->write(buffer + beginIndex, endIndex);

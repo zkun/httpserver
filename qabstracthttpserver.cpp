@@ -36,9 +36,7 @@
 #include "qhttpserverstream_p.h"
 
 #include <QtCore/qloggingcategory.h>
-#include <QtCore/qmetaobject.h>
 #include <QtNetwork/qtcpserver.h>
-#include <QtNetwork/qtcpsocket.h>
 
 #include "http_parser.h"
 
@@ -55,10 +53,10 @@ QAbstractHttpServerPrivate::QAbstractHttpServerPrivate()
 void QAbstractHttpServerPrivate::handleNewConnections()
 {
     Q_Q(QAbstractHttpServer);
-    auto tcpServer = qobject_cast<QTcpServer *>(q->sender());
-    Q_ASSERT(tcpServer);
+    auto server = qobject_cast<QTcpServer *>(q->sender());
+    Q_ASSERT(server);
 
-    while (auto socket = tcpServer->nextPendingConnection())
+    while (auto socket = server->nextPendingConnection())
         new QHttpServerStream(q, socket);
 }
 
@@ -78,11 +76,6 @@ QAbstractHttpServer::QAbstractHttpServer(QAbstractHttpServerPrivate &dd, QObject
 #endif
 }
 
-/*!
-    Tries to bind a \c QTcpServer to \a address and \a port.
-
-    Returns the server port upon success, -1 otherwise.
-*/
 quint16 QAbstractHttpServer::listen(const QHostAddress &address, quint16 port)
 {
     auto tcpServer = new QTcpServer(this);

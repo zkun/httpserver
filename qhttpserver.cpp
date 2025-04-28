@@ -33,6 +33,7 @@
 #include "qhttpserverresponder.h"
 
 #include "qhttpserver_p.h"
+#include "qhttpserverstream_p.h"
 
 #include <QtCore/qloggingcategory.h>
 

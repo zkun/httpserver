@@ -120,17 +120,11 @@ QHttpServerFutureResponse::QHttpServerFutureResponse(const QFuture<QHttpServerRe
 {
 }
 
-/*!
-    \internal
-*/
 QHttpServerFutureResponse::QHttpServerFutureResponse(QHttpServerFutureResponsePrivate *d)
     : QHttpServerResponse(d)
 {
 }
 
-/*!
-    \reimp
-*/
 void QHttpServerFutureResponse::write(QHttpServerResponder &&responder) const
 {
     if (!d_ptr->derived) {

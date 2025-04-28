@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include "qhttpserverrouterrule.h"
+#include "qhttpserverresponder.h"
 
 #include "qhttpserverrouterrule_p.h"
 #include "qhttpserverrequest_p.h"
@@ -102,9 +103,7 @@ Q_LOGGING_CATEGORY(lcRouterRule, "qt.httpserver.router.rule")
     \sq QHttpServerRequest::Method
 */
 QHttpServerRouterRule::QHttpServerRouterRule(const QString &pathPattern, RouterHandler routerHandler)
-    : QHttpServerRouterRule(pathPattern,
-                            QHttpServerRequest::Method::All,
-                            std::move(routerHandler))
+    : QHttpServerRouterRule(pathPattern, QHttpServerRequest::Method::All, std::move(routerHandler))
 {
 }
 
@@ -156,7 +155,8 @@ bool QHttpServerRouterRule::exec(const QHttpServerRequest &request, QHttpServerR
     if (!matches(request, &match))
         return false;
 
-    d->routerHandler(match, request, std::move(responder));
+    auto r = std::move(responder);
+    d->routerHandler(match, request, std::move(r));
     return true;
 }
 
@@ -175,9 +175,6 @@ bool QHttpServerRouterRule::matches(const QHttpServerRequest &request,
     return (match->hasMatch() && d->pathRegexp.captureCount() == match->lastCapturedIndex());
 }
 
-/*!
-    \internal
-*/
 bool QHttpServerRouterRule::createPathRegexp(std::initializer_list<int> metaTypes,
                                              const QMap<int, QLatin1String> &converters)
 {

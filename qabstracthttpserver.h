@@ -42,7 +42,6 @@ QT_BEGIN_NAMESPACE
 class QHttpServerRequest;
 class QHttpServerResponder;
 class QTcpServer;
-class QTcpSocket;
 
 class QAbstractHttpServerPrivate;
 class QAbstractHttpServer : public QObject

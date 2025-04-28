@@ -40,10 +40,10 @@
 QT_BEGIN_NAMESPACE
 
 class QString;
+class QHttpServerRouter;
 class QHttpServerRequest;
 class QHttpServerResponder;
 class QRegularExpressionMatch;
-class QHttpServerRouter;
 
 class QHttpServerRouterRulePrivate;
 class QHttpServerRouterRule

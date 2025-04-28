@@ -147,8 +147,10 @@ QHttpServerResponse QHttpServerResponse::fromFile(const QString &fileName)
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly))
         return QHttpServerResponse(StatusCode::NotFound);
+
     const QByteArray data = file.readAll();
     file.close();
+
     const QByteArray mimeType = QMimeDatabase().mimeTypeForFileNameAndData(fileName, data).name().toLocal8Bit();
     return QHttpServerResponse(mimeType, data);
 }

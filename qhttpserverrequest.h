@@ -39,18 +39,15 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRegularExpression;
 class QString;
-class QTcpSocket;
+class QRegularExpression;
 
 class QHttpServerRequestPrivate;
 class QHttpServerRequest final
 {
-    friend class QAbstractHttpServerPrivate;
-    friend class QHttpServerResponse;
-    friend class QHttpServerStream;
-
     Q_GADGET
+    friend class QHttpServerStream;
+    friend class QHttpServerResponse;
 
 public:
     ~QHttpServerRequest();

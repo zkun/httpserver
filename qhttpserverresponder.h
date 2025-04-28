@@ -40,7 +40,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTcpSocket;
 class QHttpServerStream;
 class QHttpServerRequest;
 
