@@ -44,6 +44,8 @@ class QHttpServerResponse
     Q_DECLARE_PRIVATE(QHttpServerResponse)
     Q_DISABLE_COPY(QHttpServerResponse)
 
+    friend class QHttpServerResponder;
+
 public:
     using StatusCode = QHttpServerResponder::StatusCode;
 
@@ -112,8 +114,6 @@ public:
     bool hasHeader(const QByteArray &name, const QByteArray &value) const;
 
     QVector<QByteArray> headers(const QByteArray &name) const;
-
-    virtual void write(QHttpServerResponder &&responder) const;
 
 protected:
     QHttpServerResponse(QHttpServerResponsePrivate *d);

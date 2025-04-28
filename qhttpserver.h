@@ -60,14 +60,6 @@ class QHttpServer final : public QAbstractHttpServer
     template <typename...>
     static constexpr bool dependent_false_v = false;
 
-    template<typename T>
-    using ResponseType =
-        typename std::conditional<
-            std::is_base_of<QHttpServerResponse, T>::value,
-            T,
-            QHttpServerResponse
-        >::type;
-
 public:
     explicit QHttpServer(QObject *parent = nullptr);
     ~QHttpServer();
@@ -153,11 +145,11 @@ private:
     void responseImpl(T &boundViewHandler, const QHttpServerRequest &request, QHttpServerResponder &&responder)
     {
         if constexpr (ViewTraits::Arguments::PlaceholdersCount == 0) {
-            ResponseType<typename ViewTraits::ReturnType> response(boundViewHandler());
+            QHttpServerResponse response(boundViewHandler());
             sendResponse(std::move(response), request, std::move(responder));
         } else if constexpr (ViewTraits::Arguments::PlaceholdersCount == 1) {
             if constexpr (ViewTraits::Arguments::Last::IsRequest::Value) {
-                ResponseType<typename ViewTraits::ReturnType> response(boundViewHandler(request));
+                QHttpServerResponse response(boundViewHandler(request));
                 sendResponse(std::move(response), request, std::move(responder));
             } else {
                 static_assert(std::is_same_v<typename ViewTraits::ReturnType, void>,

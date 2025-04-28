@@ -42,6 +42,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpServerStream;
 class QHttpServerRequest;
+class QHttpServerResponse;
 
 class QHttpServerResponderPrivate;
 class QHttpServerResponder final
@@ -153,7 +154,7 @@ public:
     void writeBody(const char *body);
     void writeBody(const QByteArray &body);
 
-    QHttpServerStream *stream() const;
+    void sendResponse(const QHttpServerResponse &response);
 
 private:
     QHttpServerResponder(QHttpServerStream *stream);

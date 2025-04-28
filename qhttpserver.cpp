@@ -143,7 +143,7 @@ void QHttpServer::sendResponse(QHttpServerResponse &&response, const QHttpServer
     for (auto afterRequestHandler : d->afterRequestHandlers)
         response = afterRequestHandler(std::move(response), request);
 
-    response.write(std::move(responder));
+    responder.sendResponse(response);
 }
 
 bool QHttpServer::handleRequest(const QHttpServerRequest &request, QHttpServerResponder &responder)

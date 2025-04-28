@@ -15,7 +15,6 @@ add_library(httpserver
     qhttpserver.cpp qhttpserver.h qhttpserver_p.h
     qhttpserverstream.cpp qhttpserverstream_p.h
     qhttpserverliterals.cpp qhttpserverliterals_p.h
-    qhttpserverfutureresponse.cpp qhttpserverfutureresponse.h
     qhttpserverrequest.cpp qhttpserverrequest.h qhttpserverrequest_p.h
     qhttpserverresponder.cpp qhttpserverresponder.h qhttpserverresponder_p.h
     qhttpserverresponse.cpp qhttpserverresponse.h qhttpserverresponse_p.h
